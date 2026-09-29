@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f7f3ea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Énergie">
+  <title>Énergie & récupération</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <style>
+    :root{
+      --bg:#f7f3ea;
+      --card:#fffdf8;
+      --ink:#272521;
+      --muted:#756f66;
+      --line:#d7d0c5;
+      --blue:#69c3e6;
+      --blue-border:#3596bd;
+      --orange:#f2b45f;
+      --orange-border:#d68a2b;
+      --shadow:0 8px 28px rgba(45,39,30,.09);
+      --safe:env(safe-area-inset-bottom,0px);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{overscroll-behavior-y:none}
+    button,input{font:inherit}
+    button{-webkit-tap-highlight-color:transparent}
+    .app{max-width:780px;margin:0 auto;padding:16px 12px calc(26px + var(--safe))}
+    .header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:4px 2px 14px}
+    h1{font-size:1.35rem;line-height:1.2;margin:0}
+    .subtitle{font-size:.82rem;color:var(--muted);margin-top:3px}
+    .install{display:none;border:0;border-radius:12px;background:#282621;color:#fff;padding:9px 11px;font-weight:750}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+    .tab{border:1px solid var(--line);background:#fff;border-radius:13px;padding:10px;font-weight:760;color:var(--ink)}
+    .tab.active{background:#2b2925;color:#fff;border-color:#2b2925}
+    .panel[hidden]{display:none!important}
+    .card{background:var(--card);border:1px solid #e6dfd4;border-radius:22px;padding:18px;box-shadow:var(--shadow)}
+    .today-date{text-transform:capitalize;color:var(--muted);font-size:.94rem}
+    .cap{font-size:2.2rem;line-height:1;font-weight:860;margin:8px 0 3px}
+    .cap-label{color:var(--muted);font-size:.9rem}
+    .meter{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin:20px 0 17px}
+    .meter-cell{height:52px;border:1px solid #aaa39a;background:#fff;border-radius:10px;
+      display:grid;place-items:center;font-weight:850;color:rgba(0,0,0,.56)}
+    .meter-cell.blue{background:var(--blue);border-color:var(--blue-border)}
+    .meter-cell.orange{background:var(--orange);border-color:var(--orange-border)}
+    .question{font-weight:800;margin-bottom:9px}
+    .levels{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+    .level{min-height:52px;border:1px solid var(--line);background:#fff;border-radius:13px;
+      font-weight:850;font-size:1.05rem;color:var(--ink)}
+    .level.current{background:var(--blue);border-color:var(--blue-border)}
+    .level.over{background:#fff5e8;border-color:#e2b477;color:#9b621c}
+    .status{min-height:22px;margin-top:10px;font-size:.85rem;font-weight:680;color:#6e511f}
+    .month-card{background:var(--card);border:1px solid #e6dfd4;border-radius:18px;padding:11px;box-shadow:var(--shadow)}
+    .month-nav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;margin-bottom:9px}
+    .month-nav button{height:40px;border:1px solid var(--line);border-radius:11px;background:#fff;font-size:1.35rem}
+    .month-title{text-align:center;text-transform:capitalize;font-weight:850}
+    .weekheads,.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+    .weekheads div{text-align:center;color:var(--muted);font-size:.69rem;padding:3px 0}
+    .day{border:1px solid #ded8ce;background:#fff;border-radius:10px;min-height:86px;padding:5px 4px;
+      display:flex;flex-direction:column;gap:3px}
+    .day.blank{visibility:hidden}
+    .day.future{opacity:.42}
+    .day.today-mark{outline:2px solid #37342f;outline-offset:1px}
+    .dn{text-align:center;font-weight:800;font-size:.69rem;color:#625d55}
+    .mini{display:flex;flex-direction:column-reverse;gap:2px;flex:1}
+    .mini i{height:8px;border:1px solid #aaa39a;border-radius:2px;background:#fff}
+    .mini i.blue{background:var(--blue)}
+    .mini i.orange{background:var(--orange)}
+    .tiny{text-align:center;min-height:10px;font-size:.62rem;color:#7b756d}
+    .legend{display:flex;gap:12px;flex-wrap:wrap;margin:10px 2px 0;font-size:.76rem;color:var(--muted)}
+    .key{display:inline-block;width:11px;height:11px;border:1px solid #99938a;margin-right:4px;vertical-align:-1px}
+    .key.blue{background:var(--blue)}
+    .key.orange{background:var(--orange)}
+    details{margin-top:14px;background:rgba(255,255,255,.58);border:1px solid #e2dbd0;border-radius:14px;padding:10px 12px}
+    summary{cursor:pointer;font-weight:760;color:#5d5851}
+    .backup-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .small{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 10px;color:var(--ink)}
+    input[type=file]{display:none}
+    .note{font-size:.76rem;color:var(--muted);line-height:1.35;margin-top:8px}
+    dialog{border:0;border-radius:20px;padding:0;width:min(92vw,420px);box-shadow:0 18px 65px rgba(0,0,0,.28)}
+    dialog::backdrop{background:rgba(0,0,0,.36)}
+    .modal{padding:18px}
+    .modal h2{font-size:1.12rem;margin:0 0 5px;text-transform:capitalize}
+    .modal-cap{font-size:.88rem;color:var(--muted);margin-bottom:12px}
+    .modal-actions{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
+    .danger{color:#a23b31}
+    @media (max-width:390px){
+      .app{padding-left:9px;padding-right:9px}.card{padding:15px}
+      .weekheads,.calendar{gap:4px}.day{min-height:78px;padding:4px 3px}
+      .meter-cell{height:48px}.levels{gap:5px}
+    }
+  </style>
+</head>
+<body>
+<main class="app">
+  <header class="header">
+    <div>
+      <h1>Énergie</h1>
+      <div class="subtitle">Récupération progressive · plafond automatique</div>
+    </div>
+    <button id="installBtn" class="install">Installer</button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-panel="todayPanel">Aujourd’hui</button>
+    <button class="tab" data-panel="calendarPanel">Calendrier</button>
+  </div>
+
+  <section id="todayPanel" class="panel">
+    <div class="card">
+      <div id="todayDate" class="today-date"></div>
+      <div id="todayCap" class="cap">5/5</div>
+      <div class="cap-label">énergie maximale disponible aujourd’hui</div>
+
+      <div id="meter" class="meter"></div>
+
+      <div class="question">Je me sens à combien ?</div>
+      <div id="todayLevels" class="levels"></div>
+      <div id="todayStatus" class="status"></div>
+    </div>
+  </section>
+
+  <section id="calendarPanel" class="panel" hidden>
+    <div class="month-card">
+      <div class="month-nav">
+        <button id="prevMonth" aria-label="Mois précédent">‹</button>
+        <div id="monthTitle" class="month-title"></div>
+        <button id="nextMonth" aria-label="Mois suivant">›</button>
+      </div>
+
+      <div class="weekheads">
+        <div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div>
+      </div>
+      <div id="calendar" class="calendar"></div>
+
+      <div class="legend">
+        <span><i class="key blue"></i>énergie disponible</span>
+        <span><i class="key orange"></i>indisponible pendant la récupération</span>
+      </div>
+    </div>
+  </section>
+
+  <details>
+    <summary>Sauvegarde / restauration</summary>
+    <div class="backup-actions">
+      <button id="exportBtn" class="small">Exporter une sauvegarde</button>
+      <label class="small" for="importInput">Restaurer une sauvegarde</label>
+      <input id="importInput" type="file" accept=".json,application/json">
+    </div>
+    <div class="note">Au quotidien tu n’as rien à faire ici : un appui sur 0–5 enregistre immédiatement.</div>
+  </details>
+</main>
+
+<dialog id="editor">
+  <div class="modal">
+    <h2 id="editorDate"></h2>
+    <div id="editorCap" class="modal-cap"></div>
+    <div id="editorLevels" class="levels"></div>
+    <div id="editorStatus" class="status"></div>
+    <div class="modal-actions">
+      <button id="deleteDay" class="small danger">Effacer ce jour</button>
+      <button id="closeEditor" class="small">Fermer</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  const DB_NAME = "energie-recuperation";
+  const STORE = "entries";
+  const FALLBACK_KEY = "energie-recuperation-fallback-v1";
+
+  let db = null;
+  let data = {};
+  let monthView = new Date();
+  monthView = new Date(monthView.getFullYear(), monthView.getMonth(), 1);
+  let installPrompt = null;
+
+  const $ = s => document.querySelector(s);
+
+  function keyFromDate(d){
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  function dateFromKey(k){
+    const [y,m,d] = k.split("-").map(Number);
+    return new Date(y,m-1,d);
+  }
+  function dayDiff(a,b){
+    const A = Date.UTC(a.getFullYear(),a.getMonth(),a.getDate());
+    const B = Date.UTC(b.getFullYear(),b.getMonth(),b.getDate());
+    return Math.round((B-A)/86400000);
+  }
+  function isFuture(d){
+    const a = new Date(d); a.setHours(0,0,0,0);
+    const b = new Date(); b.setHours(0,0,0,0);
+    return a>b;
+  }
+
+  // Règle :
+  // valeur N aujourd'hui -> plafonds suivants :
+  // N+1, N+1, N+2, N+2, ... jusqu'à 5.
+  // Si plusieurs jours précédents imposent encore une limite,
+  // on garde le plafond le plus bas.
+  function capFor(targetDate, sourceData=data){
+    let cap = 5;
+    const keys = Object.keys(sourceData).sort();
+    for(const k of keys){
+      const val = sourceData[k];
+      if(val === null || val === undefined || val === "") continue;
+      const sourceDate = dateFromKey(k);
+      const d = dayDiff(sourceDate,targetDate);
+      if(d <= 0) continue;
+      const candidate = Math.min(5, Number(val) + Math.ceil(d/2));
+      cap = Math.min(cap,candidate);
+    }
+    return Math.max(0,Math.min(5,cap));
+  }
+
+  // Une ancienne journée peut être recalculée si on modifie une journée antérieure.
+  // On ne conserve que la valeur réellement disponible, jamais une valeur au-dessus du plafond.
+  function normalizedCopy(source){
+    const result = {};
+    for(const k of Object.keys(source).sort()){
+      const d = dateFromKey(k);
+      const cap = capFor(d,result);
+      result[k] = Math.max(0,Math.min(5,Math.min(Number(source[k]),cap)));
+    }
+    return result;
+  }
+
+  function openDb(){
+    return new Promise((resolve,reject)=>{
+      if(!("indexedDB" in window)) return reject(new Error("IndexedDB indisponible"));
+      const req = indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded = () => {
+        const d = req.result;
+        if(!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE,{keyPath:"date"});
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function txDone(tx){
+    return new Promise((resolve,reject)=>{
+      tx.oncomplete=()=>resolve();
+      tx.onerror=()=>reject(tx.error);
+      tx.onabort=()=>reject(tx.error || new Error("Transaction annulée"));
+    });
+  }
+
+  async function loadData(){
+    try{
+      db = await openDb();
+      const tx = db.transaction(STORE,"readonly");
+      const req = tx.objectStore(STORE).getAll();
+      const rows = await new Promise((resolve,reject)=>{
+        req.onsuccess=()=>resolve(req.result || []);
+        req.onerror=()=>reject(req.error);
+      });
+      for(const row of rows) data[row.date]=Number(row.value);
+    }catch(e){
+      try{ data = JSON.parse(localStorage.getItem(FALLBACK_KEY) || "{}"); }
+      catch(_){ data = {}; }
+    }
+    data = normalizedCopy(data);
+    await persistAll();
+  }
+
+  async function persistAll(){
+    // Miroir localStorage en plus d'IndexedDB.
+    try{ localStorage.setItem(FALLBACK_KEY,JSON.stringify(data)); }catch(e){}
+
+    if(!db) return;
+    const tx = db.transaction(STORE,"readwrite");
+    const store = tx.objectStore(STORE);
+    store.clear();
+    for(const [date,value] of Object.entries(data)) store.put({date,value});
+    await txDone(tx);
+  }
+
+  async function saveEnergy(date, chosen){
+    const cap = capFor(date);
+    const saved = Math.min(Number(chosen),cap);
+    data[keyFromDate(date)] = saved;
+    data = normalizedCopy(data);
+    await persistAll();
+    requestPersistentStorage();
+    renderAll();
+    return {saved,cap,wasCapped:Number(chosen)>cap};
+  }
+
+  async function deleteEnergy(date){
+    delete data[keyFromDate(date)];
+    data = normalizedCopy(data);
+    await persistAll();
+    renderAll();
+  }
+
+  async function requestPersistentStorage(){
+    try{
+      if(navigator.storage && navigator.storage.persist){
+        await navigator.storage.persist();
+      }
+    }catch(e){}
+  }
+
+  function buildMeter(container,value,cap){
+    container.innerHTML="";
+    for(let n=1;n<=5;n++){
+      const cell=document.createElement("div");
+      cell.className="meter-cell";
+      if(n<=value) cell.classList.add("blue");
+      else if(n>cap) cell.classList.add("orange");
+      cell.textContent=n;
+      container.appendChild(cell);
+    }
+  }
+
+  function buildLevelButtons(container,cap,current,onPick){
+    container.innerHTML="";
+    for(let n=0;n<=5;n++){
+      const b=document.createElement("button");
+      b.type="button";
+      b.className="level";
+      if(current===n) b.classList.add("current");
+      if(n>cap) b.classList.add("over");
+      b.textContent=n;
+      b.addEventListener("click",()=>onPick(n));
+      container.appendChild(b);
+    }
+  }
+
+  function renderToday(){
+    const d = new Date();
+    const k = keyFromDate(d);
+    const cap = capFor(d);
+    const has = Object.prototype.hasOwnProperty.call(data,k);
+    const value = has ? Number(data[k]) : 0;
+
+    $("#todayDate").textContent=d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+    $("#todayCap").textContent=cap+"/5";
+    buildMeter($("#meter"),value,cap);
+
+    buildLevelButtons($("#todayLevels"),cap,has?value:null,async n=>{
+      const r = await saveEnergy(d,n);
+      $("#todayStatus").textContent = r.wasCapped
+        ? "Tu as choisi "+n+"/5, mais ton plafond est "+r.cap+"/5 : "+r.saved+"/5 est enregistré."
+        : "Enregistré : "+r.saved+"/5 ✓";
+      setTimeout(()=>$("#todayStatus").textContent="",2400);
+    });
+  }
+
+  function renderCalendar(){
+    const cal=$("#calendar");
+    cal.innerHTML="";
+    $("#monthTitle").textContent=monthView.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+
+    const y=monthView.getFullYear(), m=monthView.getMonth();
+    const first=new Date(y,m,1);
+    const offset=(first.getDay()+6)%7;
+
+    for(let i=0;i<offset;i++){
+      const blank=document.createElement("div");
+      blank.className="day blank";
+      cal.appendChild(blank);
+    }
+
+    const count=new Date(y,m+1,0).getDate();
+    const todayKey=keyFromDate(new Date());
+
+    for(let day=1;day<=count;day++){
+      const d=new Date(y,m,day);
+      const k=keyFromDate(d);
+      const cap=capFor(d);
+      const has=Object.prototype.hasOwnProperty.call(data,k);
+      const value=has?Number(data[k]):0;
+
+      const card=document.createElement("button");
+      card.type="button";
+      card.className="day";
+      if(k===todayKey) card.classList.add("today-mark");
+      if(isFuture(d)) card.classList.add("future");
+
+      const dn=document.createElement("div");
+      dn.className="dn";
+      dn.textContent=day;
+      card.appendChild(dn);
+
+      const mini=document.createElement("div");
+      mini.className="mini";
+      for(let n=1;n<=5;n++){
+        const seg=document.createElement("i");
+        if(has && n<=value) seg.classList.add("blue");
+        else if(n>cap) seg.classList.add("orange");
+        mini.appendChild(seg);
+      }
+      card.appendChild(mini);
+
+      const tiny=document.createElement("div");
+      tiny.className="tiny";
+      tiny.textContent=has ? value+"/5" : "";
+      card.appendChild(tiny);
+
+      if(!isFuture(d)) card.addEventListener("click",()=>openEditor(d));
+      cal.appendChild(card);
+    }
+  }
+
+  function renderAll(){
+    renderToday();
+    renderCalendar();
+  }
+
+  function openEditor(date){
+    const dialog=$("#editor");
+    const k=keyFromDate(date);
+
+    const rerenderEditor = () => {
+      const cap=capFor(date);
+      const has=Object.prototype.hasOwnProperty.call(data,k);
+      const current=has?Number(data[k]):null;
+
+      $("#editorDate").textContent=date.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+      $("#editorCap").textContent="Plafond ce jour-là : "+cap+"/5";
+
+      buildLevelButtons($("#editorLevels"),cap,current,async n=>{
+        const r=await saveEnergy(date,n);
+        $("#editorStatus").textContent=r.wasCapped
+          ? "Choix "+n+"/5 → plafonné à "+r.saved+"/5."
+          : "Enregistré : "+r.saved+"/5 ✓";
+        rerenderEditor();
+      });
+    };
+
+    dialog.dataset.date=k;
+    $("#editorStatus").textContent="";
+    rerenderEditor();
+    dialog.showModal();
+  }
+
+  $("#deleteDay").addEventListener("click",async()=>{
+    const k=$("#editor").dataset.date;
+    if(!k) return;
+    await deleteEnergy(dateFromKey(k));
+    $("#editor").close();
+  });
+  $("#closeEditor").addEventListener("click",()=>$("#editor").close());
+
+  $("#prevMonth").addEventListener("click",()=>{
+    monthView=new Date(monthView.getFullYear(),monthView.getMonth()-1,1);
+    renderCalendar();
+  });
+  $("#nextMonth").addEventListener("click",()=>{
+    monthView=new Date(monthView.getFullYear(),monthView.getMonth()+1,1);
+    renderCalendar();
+  });
+
+  document.querySelectorAll(".tab").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===btn));
+      const panel=btn.dataset.panel;
+      $("#todayPanel").hidden=panel!=="todayPanel";
+      $("#calendarPanel").hidden=panel!=="calendarPanel";
+      if(panel==="calendarPanel") renderCalendar();
+    });
+  });
+
+  $("#exportBtn").addEventListener("click",()=>{
+    const payload={version:1,exportedAt:new Date().toISOString(),entries:data};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="energie-sauvegarde.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  });
+
+  $("#importInput").addEventListener("change",async e=>{
+    const f=e.target.files && e.target.files[0];
+    if(!f) return;
+    try{
+      const obj=JSON.parse(await f.text());
+      const imported=(obj && obj.entries && typeof obj.entries==="object") ? obj.entries : obj;
+      if(!imported || typeof imported!=="object" || Array.isArray(imported)) throw new Error("Format");
+      data=normalizedCopy(imported);
+      await persistAll();
+      renderAll();
+      alert("Sauvegarde restaurée.");
+    }catch(err){
+      alert("Impossible de lire cette sauvegarde.");
+    }
+    e.target.value="";
+  });
+
+  window.addEventListener("beforeinstallprompt",e=>{
+    e.preventDefault();
+    installPrompt=e;
+    $("#installBtn").style.display="block";
+  });
+  $("#installBtn").addEventListener("click",async()=>{
+    if(!installPrompt) return;
+    installPrompt.prompt();
+    try{ await installPrompt.userChoice; }catch(e){}
+    installPrompt=null;
+    $("#installBtn").style.display="none";
+  });
+  window.addEventListener("appinstalled",()=>$("#installBtn").style.display="none");
+
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",()=>{
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    });
+  }
+
+  (async()=>{
+    await loadData();
+    renderAll();
+    requestPersistentStorage();
+  })();
+})();
+</script>
+</body>
+</html>
