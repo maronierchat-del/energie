@@ -45,7 +45,7 @@
     .mini i{height:9px;border:1px solid #aaa39a;border-radius:2px;background:#fff}
     .mini i.blue{background:var(--blue)}
     .mini i.orange{background:var(--orange)}
-    .mini.zero::before{content:"";display:block;height:4px;border-radius:3px;background:var(--blue);border:1px solid var(--blue-border);margin-bottom:1px}
+    .mini.zero i:first-child{border-bottom:4px solid var(--blue-border)}
     .tiny{text-align:center;min-height:11px;font-size:.62rem;color:#7b756d}
     .legend{display:flex;gap:12px;flex-wrap:wrap;margin:10px 2px 0;font-size:.76rem;color:var(--muted)}
     .key{display:inline-block;width:11px;height:11px;border:1px solid #99938a;margin-right:4px;vertical-align:-1px}
@@ -68,8 +68,7 @@
       display:grid;place-items:center;font-weight:850;color:rgba(0,0,0,.56)}
     .meter-cell.blue{background:var(--blue);border-color:var(--blue-border)}
     .meter-cell.orange{background:var(--orange);border-color:var(--orange-border)}
-    .meter-wrap{position:relative}
-    .meter-wrap.zero::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:5px;border-radius:4px;background:var(--blue);border:1px solid var(--blue-border)}
+    .meter-wrap.zero .meter-cell{border-bottom:4px solid var(--blue-border)}
     .question{font-weight:780;font-size:.9rem;margin-bottom:8px}
     .levels{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
     .level{min-height:48px;border:1px solid var(--line);background:#fff;border-radius:12px;

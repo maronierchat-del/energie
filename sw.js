@@ -1,4 +1,4 @@
-const CACHE="energie-pwa-v3";
+const CACHE="energie-pwa-v4";
 const CORE=["./","./index.html","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
 
 self.addEventListener("install",event=>{
